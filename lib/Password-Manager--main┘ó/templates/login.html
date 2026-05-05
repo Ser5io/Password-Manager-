@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="main">
+    <h2>Password Manager</h2>
+
+    <button onclick="show('login')">Login</button>
+    <button onclick="show('register')">Register</button>
+
+    <div id="login">
+        <form method="POST">
+            <input name="email" placeholder="Email">
+            <input name="password" type="password" placeholder="Password">
+            <button>Login</button>
+        </form>
+    </div>
+
+    <div id="register" style="display:none;">
+        <form method="POST" action="/register">
+            <input name="email" placeholder="Email">
+            <input id="pass" name="password" type="password" placeholder="Password">
+            <p id="strength"></p>
+            <button>Register</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function show(x){
+    document.getElementById("login").style.display = x=="login"?"block":"none";
+    document.getElementById("register").style.display = x=="register"?"block":"none";
+}
+
+document.getElementById("pass").addEventListener("input", function(){
+    let v = this.value;
+    let s = "Weak";
+    if(v.length > 8) s = "Medium";
+    if(/[A-Z]/.test(v) && /[0-9]/.test(v)) s = "Strong";
+    document.getElementById("strength").innerText = s;
+});
+</script>
+
+</body>
+</html>

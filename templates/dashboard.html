@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/add">Add</a>
+    <a href="/generate">Generator</a>
+    <a href="/settings">Settings</a>
+</div>
+
+<div class="main">
+
+<h2>Vault</h2>
+
+<input id="search" placeholder="Search">
+
+{% for item in data %}
+<div class="card">
+    <div>
+        <b style="font-size:18px;">{{item.name}}</b><br>
+        {{item.username}}<br>
+        <span id="p{{loop.index}}">••••••</span>
+    </div>
+
+    <div>
+        <button onclick="copy('{{item.password}}')">Copy</button>
+        <button onclick="showPass({{loop.index}}, '{{item.password}}')">👁</button>
+        <button onclick="del({{item.id}})">X</button>
+    </div>
+</div>
+{% endfor %}
+
+</div>
+
+<script>
+    function toast(msg){
+        let t = document.createElement("div");
+        t.className = "toast";
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(()=> t.remove(), 1500);
+    }
+    
+    function copy(t){
+        navigator.clipboard.writeText(t);
+        toast("Copied!");
+    }
+    
+    function showPass(i,p){
+        let e = document.getElementById("p"+i);
+        e.innerText = e.innerText=="••••••"?p:"••••••";
+    }
+    
+    function del(id){
+        window.location="/delete/"+id;
+    }
+</script>
+
+</body>
+</html>

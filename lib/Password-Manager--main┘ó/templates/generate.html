@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="sidebar">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/add">Add</a>
+    <a href="/generate">Generator</a>
+    <a href="/settings">Settings</a>
+</div>
+<div class="main">
+
+<h2>Generator</h2>
+
+<form method="POST">
+    Length: <span id="l">12</span><br>
+    <input type="range" name="length" min="5" max="32" value="12"
+           oninput="l.innerText=this.value"><br>
+
+    <label><input type="checkbox" name="upper" checked> Upper</label><br>
+    <label><input type="checkbox" name="lower" checked> Lower</label><br>
+    <label><input type="checkbox" name="numbers"> Numbers</label><br>
+    <label><input type="checkbox" name="symbols"> Symbols</label><br>
+
+    <button>Generate</button>
+</form>
+
+{% if password %}
+<input value="{{password}}">
+{% endif %}
+
+</div>
+
+</body>
+</html>
