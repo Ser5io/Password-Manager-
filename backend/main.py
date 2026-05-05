@@ -1,10 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends, Header
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from .db.manager import DatabaseManager
-from .core.crypto import CryptoManager
-from .services.auth import AuthService
-from .services.vault import VaultService
+from backend.db.manager import DatabaseManager
+from backend.core.crypto import CryptoManager
+from backend.services.auth import AuthService
+from backend.services.vault import VaultService
 
 app = FastAPI(title="Secure Password Manager API")
 

@@ -11,20 +11,32 @@
     <a href="/add">Add</a>
     <a href="/generate">Generator</a>
     <a href="/settings">Settings</a>
+    <a href="/logout" style="color: #f87171; margin-top: 50px;">Logout</a>
 </div>
 
 <div class="main">
 
-<h2>Vault</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h2>Vault</h2>
+    <div style="background: rgba(30, 41, 59, 0.6); padding: 8px 15px; border-radius: 20px; font-size: 14px; color: #94a3b8; border: 1px solid #1e293b;">
+        Logged in as: <b style="color: #3b82f6;">{{ session['email'] }}</b>
+    </div>
+</div>
 
 <input id="search" placeholder="Search">
 
 {% for item in data %}
 <div class="card">
     <div>
-        <b style="font-size:18px;">{{item.name}}</b><br>
-        {{item.username}}<br>
-        <span id="p{{loop.index}}">••••••</span>
+        <b style="font-size:18px; color: #3b82f6;">{{item.name}}</b><br>
+        <span style="color: #94a3b8; font-size: 13px;">{{item.url}}</span><br>
+        <div style="margin-top: 5px;">
+            <span style="color: #cbd5e1;">User: {{item.username}}</span><br>
+            {% if item.email %}
+            <span style="color: #cbd5e1;">Email: {{item.email}}</span><br>
+            {% endif %}
+            <span id="p{{loop.index}}" style="font-family: monospace; color: #4ade80;">••••••</span>
+        </div>
     </div>
 
     <div>
@@ -59,6 +71,22 @@
     function del(id){
         window.location="/delete/"+id;
     }
+
+    // Search functionality
+    document.getElementById('search').addEventListener('input', function(e) {
+        let query = e.target.value.toLowerCase();
+        let cards = document.querySelectorAll('.card');
+        
+        cards.forEach(card => {
+            // Get text from name, url, and email areas
+            let text = card.innerText.toLowerCase();
+            if (text.includes(query)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
 </script>
 
 </body>

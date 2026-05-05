@@ -3,36 +3,126 @@
 <head>
     <title>Generator</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .gen-container {
+            max-width: 450px;
+            background: rgba(30, 41, 59, 0.7);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid #3b82f6;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .gen-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .gen-display input {
+            flex-grow: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #4ade80;
+            font-family: monospace;
+            font-size: 20px;
+            text-align: center;
+            padding: 12px;
+        }
+        .slider-box { margin: 25px 0; text-align: left; }
+        .slider-box label { color: #94a3b8; font-size: 14px; display: block; margin-bottom: 10px; }
+        .slider-box input { width: 100%; cursor: pointer; }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        .checkbox-grid label { font-size: 15px; color: #cbd5e1; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .checkbox-grid input { width: auto; margin: 0; }
+    </style>
 </head>
 <body>
+
 <div class="sidebar">
     <a href="/dashboard">Dashboard</a>
     <a href="/add">Add</a>
     <a href="/generate">Generator</a>
     <a href="/settings">Settings</a>
+    <a href="/logout" style="color: #f87171; margin-top: 50px;">Logout</a>
 </div>
+
 <div class="main">
+    <h2>Secure Password Generator</h2>
+    <p style="color: #94a3b8;">Create high-entropy passwords instantly.</p>
 
-<h2>Generator</h2>
+    <div class="gen-container">
+        <div class="gen-display">
+            <input id="gen-result" readonly>
+            <button onclick="copyGenerated()">Copy</button>
+        </div>
 
-<form method="POST">
-    Length: <span id="l">12</span><br>
-    <input type="range" name="length" min="5" max="32" value="12"
-           oninput="l.innerText=this.value"><br>
+        <div class="slider-box">
+            <label>Password Length: <b id="len-val" style="color: #3b82f6; font-size: 18px;">14</b></label>
+            <input type="range" id="gen-length" min="5" max="128" value="14" oninput="updateLen(this.value)">
+        </div>
 
-    <label><input type="checkbox" name="upper" checked> Upper</label><br>
-    <label><input type="checkbox" name="lower" checked> Lower</label><br>
-    <label><input type="checkbox" name="numbers"> Numbers</label><br>
-    <label><input type="checkbox" name="symbols"> Symbols</label><br>
+        <div class="checkbox-grid">
+            <label><input type="checkbox" id="gen-upper"> A-Z (Uppercase)</label>
+            <label><input type="checkbox" id="gen-lower" checked> a-z (Lowercase)</label>
+            <label><input type="checkbox" id="gen-numbers" checked> 0-9 (Numbers)</label>
+            <label><input type="checkbox" id="gen-symbols"> !@#$% (Symbols)</label>
+        </div>
 
-    <button>Generate</button>
-</form>
-
-{% if password %}
-<input value="{{password}}">
-{% endif %}
-
+        <button onclick="generate()" style="width: 100%; padding: 15px; font-weight: bold; font-size: 16px;">GENERATE PASSWORD</button>
+    </div>
 </div>
+
+<script>
+function updateLen(val) {
+    document.getElementById('len-val').innerText = val;
+}
+
+function generate() {
+    const length = parseInt(document.getElementById('gen-length').value);
+    const useUpper = document.getElementById('gen-upper').checked;
+    const useLower = document.getElementById('gen-lower').checked;
+    const useNumbers = document.getElementById('gen-numbers').checked;
+    const useSymbols = document.getElementById('gen-symbols').checked;
+
+    let charset = "";
+    if (useUpper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (useLower) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (useNumbers) charset += "0123456789";
+    if (useSymbols) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
+
+    if (charset === "") charset = "abcdefghijklmnopqrstuvwxyz"; // Fallback
+
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    document.getElementById('gen-result').value = password;
+}
+
+function copyGenerated() {
+    const pass = document.getElementById('gen-result').value;
+    if (!pass) return;
+    
+    navigator.clipboard.writeText(pass);
+    
+    // Using the toast function if available, else alert
+    if (typeof toast === "function") {
+        toast("Copied to clipboard!");
+    } else {
+        alert("Password copied to clipboard!");
+    }
+}
+
+// Generate one on load
+window.onload = generate;
+</script>
 
 </body>
 </html>

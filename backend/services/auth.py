@@ -1,13 +1,13 @@
 from typing import Optional, Dict, Any
-from .db.manager import DatabaseManager
-from .core.crypto import CryptoManager # We will move/import the provided crypto logic here
+from backend.db.manager import DatabaseManager
+from backend.core.crypto import CryptoManager # We will move/import the provided crypto logic here
 
 class AuthService:
     def __init__(self, db: DatabaseManager, crypto: CryptoManager):
         self.db = db
         self.crypto = crypto
 
-    def register(self, email: str, master_password: str) -> bool:
+    def register(self, email: str, master_password: str) -> int:
         # 1. Validate password strength
         is_valid, msg = self.crypto.validate_master_password(master_password)
         if not is_valid:
@@ -22,11 +22,13 @@ class AuthService:
 
         # 4. Store in DB
         try:
-            self.db.execute(
+            cursor = self.db.execute(
                 "INSERT INTO users (email, master_password_hash, vault_salt, kdf_iterations) VALUES (?, ?, ?, ?)",
                 (email, master_hash, salt_b64, self.crypto.iterations)
             )
-            return True
+            user_id = cursor.lastrowid
+            self.db.log_security_event(user_id, "register")
+            return user_id
         except Exception as e:
             if "UNIQUE constraint failed" in str(e):
                 raise ValueError("Email already registered.")
@@ -38,8 +40,10 @@ class AuthService:
             return None
 
         if self.crypto.verify_master_password(master_password, user["master_password_hash"]):
+            user_id = user["id"]
+            self.db.log_security_event(user_id, "login")
             return {
-                "id": user["id"],
+                "id": user_id,
                 "email": user["email"],
                 "vault_salt": user["vault_salt"],
                 "iterations": user["kdf_iterations"]

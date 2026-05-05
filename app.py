@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, Response
 import random
 import string
 
@@ -18,6 +18,9 @@ vault = VaultService(db, crypto)
 # -------------------------
 @app.route("/", methods=["GET", "POST"])
 def login():
+    error = request.args.get("error")
+    success = request.args.get("success")
+    
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
@@ -26,19 +29,27 @@ def login():
 
         if user:
             session["user_id"] = user["id"]
+            session["email"] = user["email"]
             session["master"] = password
             return redirect("/dashboard")
         else:
-            return "Wrong login"
+            return render_template("login.html", error="Wrong email or password.", view="login")
 
-    return render_template("login.html")
+    return render_template("login.html", error=error, success=success, view="login")
 
 
 # -------------------------
 @app.route("/register", methods=["POST"])
 def register():
-    auth.register(request.form["email"], request.form["password"])
-    return redirect("/")
+    email = request.form["email"]
+    password = request.form["password"]
+    
+    try:
+        auth.register(email, password)
+        return redirect("/?success=Registered successfully! Please login.")
+    except ValueError as e:
+        # Check if it's the "Email already registered" error
+        return render_template("login.html", error=str(e), view="register")
 
 
 # -------------------------
@@ -61,6 +72,7 @@ def add():
         item = {
             "name": request.form["name"],
             "url": request.form["url"],
+            "email": request.form["email"],
             "username": request.form["username"],
             "password": request.form["password"]
         }
@@ -111,19 +123,58 @@ def settings():
 
 
 # -------------------------
-@app.route("/export")
+@app.route("/export", methods=["POST"])
 def export():
-    data = vault.export_vault(session["user_id"])
-    return data
+    if "user_id" not in session:
+        return redirect("/")
+    
+    password = request.form["password"]
+    fmt = request.form["format"] # "encrypted" or "plain"
+
+    # Verify password
+    user_data = auth.login(session["email"], password)
+    if not user_data:
+        return render_template("settings.html", error="Invalid Master Password. Export denied.")
+
+    if fmt == "plain":
+        data = vault.export_vault_plain(session["user_id"], password)
+        filename = "vault_plain_text.json"
+    else:
+        data = vault.export_vault(session["user_id"])
+        filename = "vault_encrypted_backup.json"
+    
+    db.log_security_event(session["user_id"], "export")
+
+    return Response(
+        data,
+        mimetype="application/json",
+        headers={"Content-disposition": f"attachment; filename={filename}"}
+    )
 
 
 # -------------------------
 @app.route("/import", methods=["POST"])
 def import_vault():
+    if "user_id" not in session:
+        return redirect("/")
+
     file = request.files["file"]
+    if not file.filename.endswith(".json"):
+        return render_template("settings.html", error="Only .json files are allowed for import.")
+
     content = file.read().decode()
-    vault.import_vault(session["user_id"], content)
-    return redirect("/dashboard")
+    try:
+        vault.import_vault(session["user_id"], content)
+        return redirect("/dashboard")
+    except Exception:
+        return render_template("settings.html", error="Import failed. Invalid file format.")
+
+
+# -------------------------
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
 
 
 # -------------------------

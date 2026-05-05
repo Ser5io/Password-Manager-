@@ -7,7 +7,8 @@ class DatabaseManager:
         self._init_db()
 
     def _get_connection(self):
-        conn = sqlite3.connect(self.db_path)
+        # Increased timeout to handle concurrent access
+        conn = sqlite3.connect(self.db_path, timeout=20)
         conn.row_factory = sqlite3.Row
         return conn
 
@@ -17,6 +18,8 @@ class DatabaseManager:
             schema = f.read()
         
         conn = self._get_connection()
+        # Set WAL mode once during initialization
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript(schema)
         conn.commit()
         conn.close()
@@ -46,3 +49,10 @@ class DatabaseManager:
         results = cursor.fetchall()
         conn.close()
         return results
+
+    def log_security_event(self, user_id, action):
+        """Records a security-related action in the database."""
+        self.execute(
+            "INSERT INTO security_logs (user_id, action) VALUES (?, ?)",
+            (user_id, action)
+        )

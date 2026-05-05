@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS vault_items (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    -- The following fields are stored as JSON-serialized, then AES-256-GCM encrypted strings
-    -- encapsulated in a "package" containing nonce and ciphertext.
     encrypted_data TEXT NOT NULL, 
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

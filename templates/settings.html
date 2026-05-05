@@ -11,20 +11,51 @@
     <a href="/add">Add</a>
     <a href="/generate">Generator</a>
     <a href="/settings">Settings</a>
+    <a href="/logout" style="color: #f87171; margin-top: 50px;">Logout</a>
 </div>
 
 <div class="main">
 
 <h2>Settings</h2>
 
-<h3>Export</h3>
-<a href="/export">Download Backup</a>
+{% if error %}
+<div class="card" style="border: 1px solid #f87171; color: #f87171;">
+    {{ error }}
+</div>
+{% endif %}
 
-<h3>Import</h3>
-<form method="POST" action="/import" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <button>Upload</button>
-</form>
+<div class="card" style="display: block; max-width: 500px;">
+    <h3>Export Vault</h3>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
+        Generate a backup file. Choose "Encrypted" for safety or "Plain Text" for readability.
+    </p>
+    
+    <form method="POST" action="/export">
+        <label style="color: #94a3b8; font-size: 13px;">Export Format:</label><br>
+        <select name="format" style="width: 100%; padding: 10px; background: #1e293b; color: white; border-radius: 8px; border: none; margin: 10px 0;">
+            <option value="encrypted">Encrypted (Recommended)</option>
+            <option value="plain">Plain Text (JSON)</option>
+        </select>
+        
+        <input type="password" name="password" placeholder="Verify Master Password" required style="width: 100%; margin-bottom: 15px;">
+        
+        <button type="submit" style="width: 100%; padding: 12px; font-weight: bold;">PREPARE & DOWNLOAD</button>
+    </form>
+</div>
+
+<div class="card" style="display: block; max-width: 500px; margin-top: 30px;">
+    <h3>Import Vault</h3>
+    <p style="color: #f87171; font-size: 14px; font-weight: bold; margin-bottom: 10px;">
+        WARNING: Importing will DELETE all current items in your dashboard and replace them.
+    </p>
+    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">
+        Only .json backup files are accepted.
+    </p>
+    <form method="POST" action="/import" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".json" required style="width: 100%; margin-bottom: 15px;">
+        <button type="submit" style="width: 100%; padding: 12px; font-weight: bold; background: #22c55e;">WIPE & RESTORE</button>
+    </form>
+</div>
 
 </div>
 
